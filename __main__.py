@@ -11,19 +11,19 @@ FRAMES = read_frames()
 async def animate_spaceship(canvas, start_row, start_column, speed=1):
     canvas.nodelay(True)
     max_row, max_column = canvas.getmaxyx()
-    while True:
+    frame_row_max, frame_column_max = get_frame_size(frames[0])
+    for frame in cycle(frames):
         rows_direction, columns_direction, _ = read_controls(canvas)
         start_row += rows_direction*speed
         start_column += columns_direction*speed
-        frame = next(FRAMES)
         if start_row < 1:
             start_row = 1
         if start_column < 1:
             start_column = 1
-        if start_column > max_column - 6:
-            start_column = max_column - 6
-        if start_row > max_row - 10:
-            start_row = max_row - 10
+        if start_column > max_column - frame_column_max:
+            start_column = max_column - frame_column_max
+        if start_row > max_row - frame_row_max:
+            start_row = max_row - frame_row_max
         draw_frame(canvas, start_row, start_column, frame)
         await asyncio.sleep(0)
         draw_frame(canvas, start_row, start_column, frame, negative=True)
@@ -91,13 +91,12 @@ def draw(canvas):
         for coroutine in coroutines.copy():
             try:
                 coroutine.send(None)
-                canvas.refresh()
-                sleep(0)
             except StopIteration:
                 coroutines.remove(coroutine)
             if len(coroutines) == 0:
                 break
-
+        canvas.refresh()
+        sleep(0.1)
 
 if __name__ == '__main__':
     curses.update_lines_cols()
